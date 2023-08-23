@@ -1,9 +1,9 @@
 import {assert} from 'chai';
 import {readFile, writeFile} from 'fs/promises';
-import {relative} from 'path';
 import {SimpleGit} from 'simple-git';
-import {createGitInterface, getChangedFiles} from './git';
-import {gitTestFilePath, repoRootDirPath, testFilesDirPath} from './repo-paths';
+import {gitTestFilePath, testFilesDirPath} from '../repo-paths';
+import {getChangedFiles} from './git-changes';
+import {createGitInterface} from './git-interface';
 
 function testGitFile(
     callback: (inputs: {
@@ -39,90 +39,63 @@ describe(getChangedFiles.name, () => {
         'detects a created file',
         testGitFile(async ({testFilePath, testDirPath, git}) => {
             const beforeChangesBaseResult = await getChangedFiles({
-                dir: testDirPath,
+                cwd: testDirPath,
                 baseRef: 'ebd5e22a9f55c1f70fb534e08ec71b3cfb158cb8',
                 specificFiles: [testFilePath],
             });
             assert.deepStrictEqual(
                 beforeChangesBaseResult,
-                {
-                    changed: 1,
-                    deletions: 1,
-                    files: [
-                        {
-                            binary: false,
-                            changes: 2,
-                            deletions: 1,
-                            file: relative(repoRootDirPath, testFilePath),
-                            insertions: 1,
-                        },
-                    ],
-                    insertions: 1,
-                },
+                [
+                    {
+                        additions: 1,
+                        changedLineNumbers: [1],
+                        deletions: 1,
+                        filePath: 'test-files/git-test-file.ts',
+                    },
+                ],
                 'diff since first commit is wrong',
             );
             const beforeChangesHeadResult = await getChangedFiles({
-                dir: testDirPath,
+                cwd: testDirPath,
                 baseRef: 'HEAD',
                 specificFiles: [testFilePath],
             });
-            assert.deepStrictEqual(
-                beforeChangesHeadResult,
-                {
-                    changed: 0,
-                    deletions: 0,
-                    files: [],
-                    insertions: 0,
-                },
-                'diff before changes is wrong',
-            );
+            assert.deepStrictEqual(beforeChangesHeadResult, [], 'diff before changes is wrong');
             await writeFile(testFilePath, "console.log('yo');");
             const afterChangesResult = await getChangedFiles({
-                dir: testDirPath,
+                cwd: testDirPath,
                 baseRef: 'HEAD',
                 specificFiles: [testFilePath],
             });
             assert.deepStrictEqual(
                 afterChangesResult,
-                {
-                    changed: 1,
-                    deletions: 1,
-                    files: [
-                        {
-                            binary: false,
-                            changes: 2,
-                            deletions: 1,
-                            file: relative(repoRootDirPath, testFilePath),
-                            insertions: 1,
-                        },
-                    ],
-                    insertions: 1,
-                },
+                [
+                    {
+                        additions: 1,
+                        changedLineNumbers: [1],
+                        deletions: 1,
+                        filePath: 'test-files/git-test-file.ts',
+                    },
+                ],
                 'diff after changes is wrong',
             );
             await git.add(testFilePath);
             try {
                 const afterStagedResult = await getChangedFiles({
-                    dir: testDirPath,
+                    cwd: testDirPath,
                     baseRef: 'HEAD',
                     specificFiles: [testFilePath],
                 });
                 assert.deepStrictEqual(
                     afterStagedResult,
-                    {
-                        changed: 1,
-                        deletions: 1,
-                        files: [
-                            {
-                                binary: false,
-                                changes: 2,
-                                deletions: 1,
-                                file: relative(repoRootDirPath, testFilePath),
-                                insertions: 1,
-                            },
-                        ],
-                        insertions: 1,
-                    },
+                    [
+                        {
+                            additions: 1,
+                            changedLineNumbers: [1],
+                            deletions: 1,
+                            filePath: 'test-files/git-test-file.ts',
+                        },
+                    ],
                     'diff after staging is wrong',
                 );
             } finally {

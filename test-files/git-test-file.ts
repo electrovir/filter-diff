@@ -1,1 +1,1 @@
-console.log('after first commit');
+console.info('after first commit');
