@@ -2,7 +2,7 @@ import {ArrayElement, isTruthy} from '@augment-vir/common';
 import {log} from '@augment-vir/node-js';
 import {DiffResult, DiffResultTextFile, SimpleGit, SimpleGitOptions, simpleGit} from 'simple-git';
 
-function createGitInterface(dir: string | undefined) {
+export function createGitInterface(dir: string | undefined) {
     const options: Partial<SimpleGitOptions> = {
         baseDir: dir || process.cwd(),
         trimmed: true,
@@ -15,27 +15,29 @@ function createGitInterface(dir: string | undefined) {
 export type GetChangedFilesInputs = {
     baseRef?: string | undefined;
     dir?: string | undefined;
+    specificFiles?: string[] | undefined;
 };
 
 export async function getChangedFiles({
     baseRef,
     dir,
+    specificFiles,
 }: GetChangedFilesInputs = {}): Promise<DiffResult> {
+    specificFiles = specificFiles ?? [];
     const git = createGitInterface(dir);
     const changesSinceBase = baseRef
         ? await git.diffSummary([
-              '--name-only',
               baseRef,
               'HEAD',
+              ...specificFiles,
           ])
         : undefined;
     const stagedChanges = await git.diffSummary([
-        '--name-only',
         '--cached',
+        ...specificFiles,
     ]);
     const unStagedChanges = await git.diffSummary([
-        '--name-only',
-        '--cached',
+        ...specificFiles,
     ]);
 
     const combined = [
