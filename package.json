@@ -34,6 +34,11 @@
         "test:spelling": "virmator spellcheck",
         "test:types": "tsc --noEmit"
     },
+    "dependencies": {
+        "@augment-vir/common": "^16.4.0",
+        "@augment-vir/node-js": "^16.4.0",
+        "simple-git": "^3.19.1"
+    },
     "devDependencies": {
         "@electrovir/nyc": "^15.1.0-fix0",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
@@ -53,11 +58,10 @@
         "prettier-plugin-sort-json": "^1.0.0",
         "prettier-plugin-toml": "^0.3.1",
         "ts-node": "^10.9.1",
+        "type-fest": "^4.2.0",
         "virmator": "^7.3.1"
     },
-    "dependencies": {
-        "@augment-vir/common": "^16.4.0",
-        "@augment-vir/node-js": "^16.4.0",
-        "simple-git": "^3.19.1"
+    "peerDependencies": {
+        "typescript": "^5.1.6"
     }
 }

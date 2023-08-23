@@ -1,9 +1,4 @@
-import {
-    ensureErrorAndPrependMessage,
-    isTruthy,
-    safeMatch,
-    toEnsuredNumber,
-} from '@augment-vir/common';
+import {ensureErrorAndPrependMessage, safeMatch, toEnsuredNumber} from '@augment-vir/common';
 import {relative} from 'path';
 import {SimpleGit} from 'simple-git';
 import {createGitInterface} from './git-interface';
@@ -14,19 +9,27 @@ export type GetChangedFilesInputs = {
     specificFiles?: string[] | undefined;
 };
 
-export type GitFileChanges = {
+export type GitBinaryChange = {
+    filePath: string;
+    binary: true;
+};
+
+export type GitFileChange = {
     additions: number;
     deletions: number;
     filePath: string;
     /** Changed line numbers, with the line numbers being from the current file's line numbers. */
     changedLineNumbers: number[];
+    binary: false;
 };
+
+export type GitChange = GitFileChange | GitBinaryChange;
 
 export async function getChangedFiles({
     baseRef,
     cwd: cwdInput,
     specificFiles,
-}: GetChangedFilesInputs): Promise<GitFileChanges[]> {
+}: GetChangedFilesInputs): Promise<GitChange[]> {
     specificFiles = specificFiles ?? [];
     const cwd = cwdInput || process.cwd();
     const git = createGitInterface(cwd);
@@ -35,28 +38,30 @@ export async function getChangedFiles({
         ...specificFiles,
     ]);
 
-    const fileChanges = (
-        await Promise.all(
-            changes.files.map(async (file): Promise<GitFileChanges | undefined> => {
-                if (file.binary) {
-                    return undefined;
-                }
-                const changedLineNumbers = await getChangedLineNumbers({
-                    filePath: file.file,
-                    baseRef,
-                    git,
-                    cwd,
-                });
-
+    const fileChanges = await Promise.all(
+        changes.files.map(async (file): Promise<GitChange> => {
+            if (file.binary) {
                 return {
-                    additions: file.insertions,
-                    deletions: file.deletions,
                     filePath: file.file,
-                    changedLineNumbers,
+                    binary: true,
                 };
-            }),
-        )
-    ).filter(isTruthy);
+            }
+            const changedLineNumbers = await getChangedLineNumbers({
+                filePath: file.file,
+                baseRef,
+                git,
+                cwd,
+            });
+
+            return {
+                additions: file.insertions,
+                deletions: file.deletions,
+                filePath: file.file,
+                changedLineNumbers,
+                binary: false,
+            };
+        }),
+    );
 
     return fileChanges;
 }
