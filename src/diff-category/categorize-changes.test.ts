@@ -15,7 +15,6 @@ describe(categorizeChange.name, () => {
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
                 }),
-                testDirPath,
             );
 
             assert.deepStrictEqual(fromInitialCommitCategories, [
@@ -43,7 +42,6 @@ describe(categorizeChange.name, () => {
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
                 }),
-                testDirPath,
             );
 
             assert.deepStrictEqual(afterWriteCategories, [
@@ -74,7 +72,6 @@ describe(categorizeChange.name, () => {
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
                 }),
-                testDirPath,
             );
 
             assert.deepStrictEqual(afterWriteCategories, [

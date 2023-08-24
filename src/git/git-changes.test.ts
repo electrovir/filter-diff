@@ -6,7 +6,7 @@ import {getGitChanges} from './git-changes';
 describe(getGitChanges.name, () => {
     it(
         'detects a created file',
-        testGitFile(async ({testFilePath, testDirPath, git}) => {
+        testGitFile(async ({git, testDirPath, testFilePath}) => {
             const beforeChangesBaseResult = await getGitChanges({
                 cwd: testDirPath,
                 baseRef: initCommitHash,
@@ -19,7 +19,7 @@ describe(getGitChanges.name, () => {
                         additions: 1,
                         changedLineNumbers: [1],
                         deletions: 1,
-                        filePath: 'git-test-file.ts',
+                        filePath: testFilePath,
                         binary: false,
                     },
                 ],
@@ -44,7 +44,7 @@ describe(getGitChanges.name, () => {
                         additions: 1,
                         changedLineNumbers: [1],
                         deletions: 1,
-                        filePath: 'git-test-file.ts',
+                        filePath: testFilePath,
                         binary: false,
                     },
                 ],
@@ -64,7 +64,7 @@ describe(getGitChanges.name, () => {
                             additions: 1,
                             changedLineNumbers: [1],
                             deletions: 1,
-                            filePath: 'git-test-file.ts',
+                            filePath: testFilePath,
                             binary: false,
                         },
                     ],

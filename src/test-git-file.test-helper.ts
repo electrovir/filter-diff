@@ -1,7 +1,7 @@
 import {readFile, writeFile} from 'fs/promises';
 import {SimpleGit} from 'simple-git';
 import {createGitInterface} from './git/git-interface';
-import {gitTestFilePath, testFilesDirPath} from './repo-paths';
+import {gitTestFilePath, testFilesDirPath} from './repo-paths.test-helper';
 
 export function testGitFile<T>(
     callback: (inputs: {
@@ -12,8 +12,9 @@ export function testGitFile<T>(
     }) => T,
 ) {
     const testFilePath = gitTestFilePath;
-    let originalContents = '';
     const gitInterface = createGitInterface(testFilesDirPath);
+
+    let originalContents = '';
 
     return async (): Promise<T> => {
         try {

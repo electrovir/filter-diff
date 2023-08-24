@@ -1,8 +1,8 @@
-import {DiffCategory, filterToIncludedChangeFileNames} from '.';
+import {DiffCategory, filterToDiffFilePaths} from '..';
 
 async function main() {
     console.log(
-        await filterToIncludedChangeFileNames({
+        await filterToDiffFilePaths({
             filter: {exclude: {contains: [DiffCategory.BodyAdditions]}},
         }),
     );

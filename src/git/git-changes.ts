@@ -1,8 +1,8 @@
 import {ensureErrorAndPrependMessage, safeMatch, toEnsuredNumber} from '@augment-vir/common';
-import {relative} from 'path';
+import {join} from 'path';
 import {SimpleGit} from 'simple-git';
 import {ReadonlyDeep} from 'type-fest';
-import {createGitInterface} from './git-interface';
+import {createGitInterface, getRepoRootPath} from './git-interface';
 
 export type GetChangedFilesInputs = {
     baseRef: string;
@@ -34,36 +34,35 @@ export async function getGitChanges({
     // not testing lacking specific files
     /* istanbul ignore next */
     specificFiles = specificFiles ?? [];
-    // not testing lacking cwd
-    /* istanbul ignore next */
-    const cwd = cwdInput || process.cwd();
-    const git = createGitInterface(cwd);
+    const git = createGitInterface(cwdInput);
+    const cwd = await getRepoRootPath(git);
     const changes = await git.diffSummary([
         baseRef,
-        ...specificFiles.map((specificFilePath) => relative(cwd, specificFilePath)),
+        ...specificFiles,
     ]);
 
     const fileChanges = await Promise.all(
         changes.files.map(async (file): Promise<GitChange> => {
+            const fullFilePath = join(cwd, file.file);
+
             // not testing binary files
             /* istanbul ignore next */
             if (file.binary) {
                 return {
-                    filePath: file.file,
+                    filePath: fullFilePath,
                     binary: true,
                 };
             }
             const changedLineNumbers = await getChangedLineNumbers({
-                filePath: file.file,
+                filePath: fullFilePath,
                 baseRef,
                 git,
-                cwd,
             });
 
             return {
                 additions: file.insertions,
                 deletions: file.deletions,
-                filePath: relative(cwd, file.file),
+                filePath: fullFilePath,
                 changedLineNumbers,
                 binary: false,
             };
@@ -77,18 +76,16 @@ async function getChangedLineNumbers({
     filePath,
     baseRef,
     git,
-    cwd,
 }: {
     filePath: string;
     baseRef: string;
     git: SimpleGit;
-    cwd: string;
 }): Promise<number[]> {
     const diffOutput = await git.diff([
         '-U0',
         baseRef,
         '--',
-        relative(cwd, filePath),
+        filePath,
     ]);
 
     const changedLines: number[] = [];

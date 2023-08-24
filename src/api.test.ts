@@ -1,7 +1,7 @@
 import {itCases} from '@augment-vir/chai';
-import {createFilteredDiffInputs, filterToIncludedChangeFileNames, getFilteredDiff} from './api';
+import {createFilteredDiffInputs, filterToDiffFilePaths, getFilteredDiff} from './api';
 import {DiffCategory} from './diff-category/diff-category';
-import {gitTestFilePath, testFilesDirPath} from './repo-paths';
+import {gitTestFilePath, testFilesDirPath} from './repo-paths.test-helper';
 import {initCommitHash} from './test-git-file.test-helper';
 
 describe(createFilteredDiffInputs.name, () => {
@@ -75,7 +75,7 @@ describe(getFilteredDiff.name, () => {
                             1,
                         ],
                         deletions: 1,
-                        filePath: 'git-test-file.ts',
+                        filePath: gitTestFilePath,
                     },
                 ],
             },
@@ -83,8 +83,8 @@ describe(getFilteredDiff.name, () => {
     ]);
 });
 
-describe(filterToIncludedChangeFileNames.name, () => {
-    itCases(filterToIncludedChangeFileNames, [
+describe(filterToDiffFilePaths.name, () => {
+    itCases(filterToDiffFilePaths, [
         {
             it: 'gets no changed file names if there were none',
             input: {
@@ -102,7 +102,7 @@ describe(filterToIncludedChangeFileNames.name, () => {
                 cwd: testFilesDirPath,
                 specificFiles: [gitTestFilePath],
             },
-            expect: ['git-test-file.ts'],
+            expect: [gitTestFilePath],
         },
     ]);
 });

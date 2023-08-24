@@ -1,6 +1,6 @@
 {
     "name": "filter-diff",
-    "version": "0.0.1",
+    "version": "1.0.0",
     "description": "Smart diff filtering based on git features and specific language syntax",
     "keywords": [],
     "homepage": "https://github.com/electrovir/filter-diff",

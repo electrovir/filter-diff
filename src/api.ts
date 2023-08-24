@@ -42,12 +42,12 @@ export async function getFilteredDiff(
     const inputs = createFilteredDiffInputs(rawInputs);
     const changes = await getGitChanges(inputs);
 
-    const filteredChanges = filterDiffs(inputs.filter, changes, inputs.cwd);
+    const filteredChanges = filterDiffs(inputs.filter, changes);
 
     return filteredChanges;
 }
 
-export async function filterToIncludedChangeFileNames(
+export async function filterToDiffFilePaths(
     inputs: ReadonlyDeep<GetFilteredDiffInputs>,
 ): Promise<string[]> {
     const filteredDiff = await getFilteredDiff(inputs);

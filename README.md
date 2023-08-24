@@ -10,16 +10,16 @@ npm i filter-diff
 
 # Usage
 
-The main api entry point is `filterToIncludedChangeFileNames`:
+The main api entry point is `filterToDiffFilePaths`:
 
-<!-- example-link: src/api.example.ts -->
+<!-- example-link: src/readme-examples/api.example.ts -->
 
 ```TypeScript
-import {DiffCategory, filterToIncludedChangeFileNames} from 'filter-diff';
+import {DiffCategory, filterToDiffFilePaths} from 'filter-diff';
 
 async function main() {
     console.log(
-        await filterToIncludedChangeFileNames({
+        await filterToDiffFilePaths({
             filter: {exclude: {contains: [DiffCategory.BodyAdditions]}},
         }),
     );

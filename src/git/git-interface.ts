@@ -1,11 +1,16 @@
 import simpleGit, {SimpleGit, SimpleGitOptions} from 'simple-git';
 
-export function createGitInterface(cwd: string | undefined) {
+export async function getRepoRootPath(git: SimpleGit): Promise<string> {
+    const output = await git.raw([
+        'rev-parse',
+        '--show-toplevel',
+    ]);
+    return output;
+}
+
+export function createGitInterface(cwd: string) {
     const options: Partial<SimpleGitOptions> = {
-        baseDir:
-            // not testing lacking cwd
-            /* istanbul ignore next */
-            cwd || process.cwd(),
+        baseDir: cwd,
         trimmed: true,
     };
 

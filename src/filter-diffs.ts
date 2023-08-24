@@ -35,9 +35,8 @@ export type FilterDiffOutput = {
 export async function filterDiffs(
     filterInput: ReadonlyDeep<DiffFilter>,
     changes: ReadonlyArray<Readonly<GitChange>>,
-    cwd: string,
 ): Promise<FilterDiffOutput> {
-    const categories = await categorizeChanges(changes, cwd);
+    const categories = await categorizeChanges(changes);
 
     const included: GitChangeWithCategories[] = [];
     const excluded: GitChangeWithCategories[] = [];
