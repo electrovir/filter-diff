@@ -32,7 +32,8 @@
         "test:docs": "virmator code-in-markdown check",
         "test:format": "virmator format check",
         "test:spelling": "virmator spellcheck",
-        "test:types": "tsc --noEmit"
+        "test:types": "tsc --noEmit",
+        "test:watch": "npm test -- --watch"
     },
     "dependencies": {
         "@augment-vir/common": "^16.4.0",
@@ -40,6 +41,7 @@
         "simple-git": "^3.19.1"
     },
     "devDependencies": {
+        "@augment-vir/chai": "^16.4.0",
         "@electrovir/nyc": "^15.1.0-fix0",
         "@istanbuljs/nyc-config-typescript": "^1.0.2",
         "@types/chai": "^4.3.5",

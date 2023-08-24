@@ -4,6 +4,7 @@ const baseOptions = require('virmator/base-configs/base-mocharc.js');
 const mochaConfig = {
     ...baseOptions,
     parallel: false,
+    watch: './src/',
 };
 
 module.exports = mochaConfig;

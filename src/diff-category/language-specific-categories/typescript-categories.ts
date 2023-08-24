@@ -29,12 +29,13 @@ export async function getCategoriesFromTypescript(
     const lineNumberKinds: Record<number, Set<SyntaxKind>> = {};
 
     function addLineKinds(node: TsNode) {
+        const startLine: number =
+            sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
+        const endLine: number = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line + 1;
+        if (shouldDebug) {
+            console.info(`parsing ${node.kind} node from ${startLine} to ${endLine}`);
+        }
         if (node.kind !== SyntaxKind.SourceFile) {
-            const startLine: number = sourceFile.getLineAndCharacterOfPosition(
-                node.getStart(),
-            ).line;
-            const endLine: number = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line;
-
             relevantLineNumbers.forEach((lineNumber) => {
                 if (lineNumber <= endLine && lineNumber >= startLine) {
                     const currentLineKinds = lineNumberKinds[lineNumber] ?? new Set();

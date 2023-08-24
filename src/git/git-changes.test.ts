@@ -1,13 +1,13 @@
 import {assert} from 'chai';
 import {writeFile} from 'fs/promises';
 import {initCommitHash, testGitFile} from '../test-git-file.test-helper';
-import {getChangedFiles} from './git-changes';
+import {getGitChanges} from './git-changes';
 
-describe(getChangedFiles.name, () => {
+describe(getGitChanges.name, () => {
     it(
         'detects a created file',
         testGitFile(async ({testFilePath, testDirPath, git}) => {
-            const beforeChangesBaseResult = await getChangedFiles({
+            const beforeChangesBaseResult = await getGitChanges({
                 cwd: testDirPath,
                 baseRef: initCommitHash,
                 specificFiles: [testFilePath],
@@ -25,14 +25,14 @@ describe(getChangedFiles.name, () => {
                 ],
                 'diff since first commit is wrong',
             );
-            const beforeChangesHeadResult = await getChangedFiles({
+            const beforeChangesHeadResult = await getGitChanges({
                 cwd: testDirPath,
                 baseRef: 'HEAD',
                 specificFiles: [testFilePath],
             });
             assert.deepStrictEqual(beforeChangesHeadResult, [], 'diff before changes is wrong');
             await writeFile(testFilePath, "console.info('yo');");
-            const afterChangesResult = await getChangedFiles({
+            const afterChangesResult = await getGitChanges({
                 cwd: testDirPath,
                 baseRef: 'HEAD',
                 specificFiles: [testFilePath],
@@ -52,7 +52,7 @@ describe(getChangedFiles.name, () => {
             );
             await git.add(testFilePath);
             try {
-                const afterStagedResult = await getChangedFiles({
+                const afterStagedResult = await getGitChanges({
                     cwd: testDirPath,
                     baseRef: 'HEAD',
                     specificFiles: [testFilePath],

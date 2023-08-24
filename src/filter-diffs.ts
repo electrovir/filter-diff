@@ -5,16 +5,45 @@ import {DiffCategory} from './diff-category/diff-category';
 import {GitChange} from './git/git-changes';
 
 export type DiffFilter = Partial<{
-    exclude: RequireExactlyOne<{exactly: DiffCategory[]; includes: DiffCategory[]}>;
-    require: RequireExactlyOne<{exactly: DiffCategory[]; atLeast: DiffCategory[]}>;
+    exclude: RequireExactlyOne<{
+        /**
+         * Any changes that match this list of categories exactly is excluded. Order does not
+         * matter.
+         */
+        exactly: DiffCategory[];
+        /**
+         * Any changes that contain any of the categories in this list are excluded. Order does not
+         * matter.
+         */
+        contains: DiffCategory[];
+    }>;
+    require: RequireExactlyOne<{
+        /** All changes must have exactly these categories. Order does not matter. */
+        exactly: DiffCategory[];
+        /** All changes must have at least these listed categories. Order does not matter. */
+        atLeast: DiffCategory[];
+    }>;
 }>;
 
-export async function filterDiffs(filter: DiffFilter, changes: GitChange[]): Promise<GitChange[]> {
+export type GitChangeWithCategories = GitChange & {categories: DiffCategory[]};
+
+export async function filterDiffs(
+    filter: DiffFilter,
+    changes: GitChange[],
+): Promise<{
+    included: GitChangeWithCategories[];
+    excluded: GitChangeWithCategories[];
+}> {
     const categories = await categorizeChanges(changes);
 
-    const filteredChanges = changes.filter((change, changeIndex) => {
+    const included: GitChangeWithCategories[] = [];
+    const excluded: GitChangeWithCategories[] = [];
+
+    changes.forEach((change, changeIndex) => {
+        let shouldInclude = true;
+
         if (change.binary) {
-            return false;
+            shouldInclude = false;
         }
 
         const changeCategories = categories[changeIndex];
@@ -28,15 +57,15 @@ export async function filterDiffs(filter: DiffFilter, changes: GitChange[]): Pro
         if (filter.exclude) {
             if (filter.exclude.exactly) {
                 if (areJsonEqual(filter.exclude.exactly.sort(), changeCategories)) {
-                    return false;
+                    shouldInclude = false;
                 }
-            } else if (filter.exclude.includes) {
+            } else if (filter.exclude.contains) {
                 if (
-                    filter.exclude.includes.some((excludedCategory) =>
+                    filter.exclude.contains.some((excludedCategory) =>
                         changeCategories.includes(excludedCategory),
                     )
                 ) {
-                    return false;
+                    shouldInclude = false;
                 }
             }
         }
@@ -48,17 +77,23 @@ export async function filterDiffs(filter: DiffFilter, changes: GitChange[]): Pro
                         changeCategories.includes(requiredCategory),
                     )
                 ) {
-                    return false;
+                    shouldInclude = false;
                 }
             } else if (filter.require.exactly) {
                 if (!areJsonEqual(filter.require.exactly.sort(), changeCategories.sort())) {
-                    return false;
+                    shouldInclude = false;
                 }
             }
         }
 
-        return true;
+        const changeWithCategories = {...change, categories: changeCategories};
+
+        if (shouldInclude) {
+            included.push(changeWithCategories);
+        } else {
+            excluded.push(changeWithCategories);
+        }
     });
 
-    return filteredChanges;
+    return {included, excluded};
 }

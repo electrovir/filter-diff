@@ -25,7 +25,7 @@ export type GitFileChange = {
 
 export type GitChange = GitFileChange | GitBinaryChange;
 
-export async function getChangedFiles({
+export async function getGitChanges({
     baseRef,
     cwd: cwdInput,
     specificFiles,

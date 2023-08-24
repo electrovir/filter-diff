@@ -1,6 +1,6 @@
 import {assert} from 'chai';
 import {writeFile} from 'fs/promises';
-import {getChangedFiles} from '../git/git-changes';
+import {getGitChanges} from '../git/git-changes';
 import {initCommitHash, testGitFile} from '../test-git-file.test-helper';
 import {categorizeChange, categorizeChanges} from './categorize-changes';
 import {DiffCategory} from './diff-category';
@@ -10,7 +10,7 @@ describe(categorizeChange.name, () => {
         'distinguishes import line changes',
         testGitFile(async ({testFilePath, testDirPath, originalContents, git}) => {
             const fromInitialCommitCategories = await categorizeChanges(
-                await getChangedFiles({
+                await getGitChanges({
                     baseRef: initCommitHash,
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
@@ -37,7 +37,7 @@ describe(categorizeChange.name, () => {
             );
 
             const afterWriteCategories = await categorizeChanges(
-                await getChangedFiles({
+                await getGitChanges({
                     baseRef: 'HEAD',
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
@@ -67,7 +67,7 @@ describe(categorizeChange.name, () => {
             );
 
             const afterWriteCategories = await categorizeChanges(
-                await getChangedFiles({
+                await getGitChanges({
                     baseRef: 'HEAD',
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
