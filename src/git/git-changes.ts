@@ -1,11 +1,12 @@
 import {ensureErrorAndPrependMessage, safeMatch, toEnsuredNumber} from '@augment-vir/common';
 import {relative} from 'path';
 import {SimpleGit} from 'simple-git';
+import {ReadonlyDeep} from 'type-fest';
 import {createGitInterface} from './git-interface';
 
 export type GetChangedFilesInputs = {
     baseRef: string;
-    cwd?: string | undefined;
+    cwd: string;
     specificFiles?: string[] | undefined;
 };
 
@@ -29,17 +30,23 @@ export async function getGitChanges({
     baseRef,
     cwd: cwdInput,
     specificFiles,
-}: GetChangedFilesInputs): Promise<GitChange[]> {
+}: ReadonlyDeep<GetChangedFilesInputs>): Promise<GitChange[]> {
+    // not testing lacking specific files
+    /* istanbul ignore next */
     specificFiles = specificFiles ?? [];
+    // not testing lacking cwd
+    /* istanbul ignore next */
     const cwd = cwdInput || process.cwd();
     const git = createGitInterface(cwd);
     const changes = await git.diffSummary([
         baseRef,
-        ...specificFiles,
+        ...specificFiles.map((specificFilePath) => relative(cwd, specificFilePath)),
     ]);
 
     const fileChanges = await Promise.all(
         changes.files.map(async (file): Promise<GitChange> => {
+            // not testing binary files
+            /* istanbul ignore next */
             if (file.binary) {
                 return {
                     filePath: file.file,
@@ -56,7 +63,7 @@ export async function getGitChanges({
             return {
                 additions: file.insertions,
                 deletions: file.deletions,
-                filePath: file.file,
+                filePath: relative(cwd, file.file),
                 changedLineNumbers,
                 binary: false,
             };
@@ -112,6 +119,8 @@ function extractFinalLineNumbersFromDiffLine(diffLine: string): number[] {
         }
         return lineNumbers;
     } catch (caught) {
+        // not testing errors
+        /* istanbul ignore next */
         throw ensureErrorAndPrependMessage(caught, `Failed to parse diff line '${diffLine}':`);
     }
 }

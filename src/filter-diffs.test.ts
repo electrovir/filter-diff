@@ -4,6 +4,7 @@ import {writeFile} from 'fs/promises';
 import {DiffCategory} from './diff-category/diff-category';
 import {DiffFilter, filterDiffs} from './filter-diffs';
 import {getGitChanges} from './git/git-changes';
+import {testFilesDirPath} from './repo-paths';
 import {testGitFile} from './test-git-file.test-helper';
 
 async function filterDiffsTestWrapper({
@@ -37,7 +38,7 @@ async function filterDiffsTestWrapper({
             specificFiles: [testFilePath],
         });
 
-        return filterDiffs(filter, gitChanges);
+        return filterDiffs(filter, gitChanges, testFilesDirPath);
     })();
 }
 
@@ -53,7 +54,7 @@ describe(filterDiffs.name, () => {
             2,
         ],
         deletions: 0,
-        filePath: 'test-files/git-test-file.ts',
+        filePath: 'git-test-file.ts',
     };
 
     const standardNewLines = ["console.info('hi');"];
@@ -84,6 +85,24 @@ describe(filterDiffs.name, () => {
                         exactly: [
                             DiffCategory.Additions,
                             DiffCategory.BodyAdditions,
+                        ],
+                    },
+                },
+                newLines: standardNewLines,
+            },
+            expect: {
+                excluded: [],
+                included: [baseOutput],
+            },
+        },
+        {
+            it: 'does not respect exactly order',
+            input: {
+                filter: {
+                    require: {
+                        exactly: [
+                            DiffCategory.BodyAdditions,
+                            DiffCategory.Additions,
                         ],
                     },
                 },

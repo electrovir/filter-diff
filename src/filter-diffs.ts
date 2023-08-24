@@ -1,5 +1,5 @@
-import {areJsonEqual} from '@augment-vir/common';
-import {RequireExactlyOne} from 'type-fest';
+import {areJsonEqual, mapObjectValues} from '@augment-vir/common';
+import {ReadonlyDeep, RequireExactlyOne} from 'type-fest';
 import {categorizeChanges} from './diff-category/categorize-changes';
 import {DiffCategory} from './diff-category/diff-category';
 import {GitChange} from './git/git-changes';
@@ -27,41 +27,64 @@ export type DiffFilter = Partial<{
 
 export type GitChangeWithCategories = GitChange & {categories: DiffCategory[]};
 
-export async function filterDiffs(
-    filter: DiffFilter,
-    changes: GitChange[],
-): Promise<{
+export type FilterDiffOutput = {
     included: GitChangeWithCategories[];
     excluded: GitChangeWithCategories[];
-}> {
-    const categories = await categorizeChanges(changes);
+};
+
+export async function filterDiffs(
+    filterInput: ReadonlyDeep<DiffFilter>,
+    changes: ReadonlyArray<Readonly<GitChange>>,
+    cwd: string,
+): Promise<FilterDiffOutput> {
+    const categories = await categorizeChanges(changes, cwd);
 
     const included: GitChangeWithCategories[] = [];
     const excluded: GitChangeWithCategories[] = [];
 
+    const sortedFilters = mapObjectValues(filterInput, (key, value) => {
+        // this is for type safety
+        /* istanbul ignore next */
+        if (!value) {
+            return undefined;
+        }
+        return mapObjectValues(value, (innerKey, innerValue) => {
+            // this is for type safety
+            /* istanbul ignore next */
+            if (!innerValue) {
+                return undefined;
+            }
+            return [...innerValue].sort();
+        });
+    }) as DiffFilter;
+
     changes.forEach((change, changeIndex) => {
         let shouldInclude = true;
 
+        // not testing binary files
+        /* istanbul ignore next */
         if (change.binary) {
             shouldInclude = false;
         }
 
         const changeCategories = categories[changeIndex];
 
+        // this is for type safety
+        /* istanbul ignore next */
         if (!changeCategories) {
             throw new Error(
                 `Failed to find change categories for change from file '${change.filePath}' at index '${changeIndex}'`,
             );
         }
 
-        if (filter.exclude) {
-            if (filter.exclude.exactly) {
-                if (areJsonEqual(filter.exclude.exactly.sort(), changeCategories)) {
+        if (sortedFilters.exclude) {
+            if (sortedFilters.exclude.exactly) {
+                if (areJsonEqual([...sortedFilters.exclude.exactly].sort(), changeCategories)) {
                     shouldInclude = false;
                 }
-            } else if (filter.exclude.contains) {
+            } else {
                 if (
-                    filter.exclude.contains.some((excludedCategory) =>
+                    sortedFilters.exclude.contains.some((excludedCategory) =>
                         changeCategories.includes(excludedCategory),
                     )
                 ) {
@@ -70,17 +93,17 @@ export async function filterDiffs(
             }
         }
 
-        if (filter.require) {
-            if (filter.require.atLeast) {
+        if (sortedFilters.require) {
+            if (sortedFilters.require.atLeast) {
                 if (
-                    !filter.require.atLeast.every((requiredCategory) =>
+                    !sortedFilters.require.atLeast.every((requiredCategory) =>
                         changeCategories.includes(requiredCategory),
                     )
                 ) {
                     shouldInclude = false;
                 }
-            } else if (filter.require.exactly) {
-                if (!areJsonEqual(filter.require.exactly.sort(), changeCategories.sort())) {
+            } else {
+                if (!areJsonEqual(sortedFilters.require.exactly.sort(), changeCategories.sort())) {
                     shouldInclude = false;
                 }
             }

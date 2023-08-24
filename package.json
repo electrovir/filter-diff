@@ -1,6 +1,6 @@
 {
     "name": "filter-diff",
-    "version": "0.0.0",
+    "version": "0.0.1",
     "description": "Smart diff filtering based on git features and specific language syntax",
     "keywords": [],
     "homepage": "https://github.com/electrovir/filter-diff",
@@ -48,7 +48,9 @@
         "@types/mocha": "^10.0.1",
         "@types/node": "^20.5.3",
         "chai": "^4.3.7",
+        "cspell": "^6.31.2",
         "istanbul-smart-text-reporter": "^1.1.2",
+        "markdown-code-example-inserter": "^0.3.1",
         "mocha": "^10.2.0",
         "mocha-spec-reporter-with-file-names": "^0.0.3",
         "prettier": "^2.8.8",
@@ -61,6 +63,7 @@
         "prettier-plugin-toml": "^0.3.1",
         "ts-node": "^10.9.1",
         "type-fest": "^4.2.0",
+        "typescript": "^5.1.6",
         "virmator": "^7.3.1"
     },
     "peerDependencies": {

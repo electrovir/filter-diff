@@ -1,4 +1,5 @@
 import {readFile} from 'fs/promises';
+import {basename} from 'path';
 import {ScriptTarget, SyntaxKind, Node as TsNode, createSourceFile, forEachChild} from 'typescript';
 import {shouldDebug} from '../../env';
 import {GitFileChange} from '../../git/git-changes';
@@ -16,7 +17,7 @@ export async function getCategoriesFromTypescript(
     ];
 
     const sourceFile = createSourceFile(
-        fileChange.filePath,
+        basename(fileChange.filePath),
         fileContents,
         ScriptTarget.ES2021,
         true,
@@ -32,6 +33,9 @@ export async function getCategoriesFromTypescript(
         const startLine: number =
             sourceFile.getLineAndCharacterOfPosition(node.getStart()).line + 1;
         const endLine: number = sourceFile.getLineAndCharacterOfPosition(node.getEnd()).line + 1;
+
+        // not testing debugging
+        /* istanbul ignore next */
         if (shouldDebug) {
             console.info(`parsing ${node.kind} node from ${startLine} to ${endLine}`);
         }
@@ -62,6 +66,8 @@ export async function getCategoriesFromTypescript(
         }
     });
 
+    // not testing debugging
+    /* istanbul ignore next */
     if (shouldDebug) {
         console.info(
             fileChange.filePath,

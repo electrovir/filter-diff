@@ -8,13 +8,14 @@ import {DiffCategory} from './diff-category';
 describe(categorizeChange.name, () => {
     it(
         'distinguishes import line changes',
-        testGitFile(async ({testFilePath, testDirPath, originalContents, git}) => {
+        testGitFile(async ({testFilePath, testDirPath, originalContents}) => {
             const fromInitialCommitCategories = await categorizeChanges(
                 await getGitChanges({
                     baseRef: initCommitHash,
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
                 }),
+                testDirPath,
             );
 
             assert.deepStrictEqual(fromInitialCommitCategories, [
@@ -42,6 +43,7 @@ describe(categorizeChange.name, () => {
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
                 }),
+                testDirPath,
             );
 
             assert.deepStrictEqual(afterWriteCategories, [
@@ -72,6 +74,7 @@ describe(categorizeChange.name, () => {
                     cwd: testDirPath,
                     specificFiles: [testFilePath],
                 }),
+                testDirPath,
             );
 
             assert.deepStrictEqual(afterWriteCategories, [
