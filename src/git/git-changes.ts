@@ -26,6 +26,22 @@ export type GitFileChange = {
 
 export type GitChange = GitFileChange | GitBinaryChange;
 
+const renameRegExp = /\{(.+) => (.+)\}/;
+
+export function fixFilePath(filePath: string): string {
+    const [
+        ,
+        oldName,
+        newName,
+    ] = safeMatch(filePath, renameRegExp);
+
+    if (!oldName || !newName) {
+        return filePath;
+    }
+
+    return filePath.replace(renameRegExp, newName);
+}
+
 export async function getGitChanges({
     baseRef,
     cwd: cwdInput,
@@ -43,7 +59,8 @@ export async function getGitChanges({
 
     const fileChanges = await Promise.all(
         changes.files.map(async (file): Promise<GitChange> => {
-            const fullFilePath = join(cwd, file.file);
+            const fixedRename = fixFilePath(file.file);
+            const fullFilePath = join(cwd, fixedRename);
 
             // not testing binary files
             /* istanbul ignore next */

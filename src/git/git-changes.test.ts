@@ -1,7 +1,8 @@
+import {itCases} from '@augment-vir/chai';
 import {assert} from 'chai';
 import {writeFile} from 'fs/promises';
 import {initCommitHash, testGitFile} from '../test-git-file.test-helper';
-import {getGitChanges} from './git-changes';
+import {fixFilePath, getGitChanges} from './git-changes';
 
 describe(getGitChanges.name, () => {
     it(
@@ -78,4 +79,19 @@ describe(getGitChanges.name, () => {
             }
         }),
     );
+});
+
+describe(fixFilePath.name, () => {
+    itCases(fixFilePath, [
+        {
+            it: 'does not modify a path without renames',
+            input: 'path1/path2/path3/path4/file.ts',
+            expect: 'path1/path2/path3/path4/file.ts',
+        },
+        {
+            it: 'modifies a path with renames',
+            input: 'path1/{old/path => new/path}/path2/path3/file.ts',
+            expect: 'path1/new/path/path2/path3/file.ts',
+        },
+    ]);
 });
