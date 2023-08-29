@@ -1,4 +1,4 @@
-import {readFile} from 'fs/promises';
+import {readFileIfExists} from '@augment-vir/node-js';
 import {basename} from 'path';
 import {ScriptTarget, SyntaxKind, Node as TsNode, createSourceFile, forEachChild} from 'typescript';
 import {shouldDebug} from '../../env';
@@ -8,7 +8,10 @@ import {DiffCategory} from '../diff-category';
 export async function getCategoriesFromTypescript(
     fileChange: GitFileChange,
 ): Promise<DiffCategory[]> {
-    const fileContents = (await readFile(fileChange.filePath)).toString();
+    const fileContents = await readFileIfExists(fileChange.filePath);
+    if (!fileContents) {
+        return [];
+    }
 
     const fileLinesByLineNumber = [
         // empty string because line numbers are 1 indexed
